@@ -1,0 +1,439 @@
+﻿using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Framework.ORM
+{
+    public class SqlHelper<T> 
+    {
+        private DataTable identityColumns = new DataTable();
+        private SqlConnection conn = new SqlConnection(@"Server=FACAXNOTEBOOK\FACAXSQL;Database=SitioWeb;User Id=sa; Password=1024;");
+
+        #region Constates
+        const string InsertQuery = "INSERT INTO #TABLE# (#COLUMNS#) VALUES (#PARAMETERS#)";
+        const string UpdateQuery = "UPDATE #TABLE# SET #COLUMNS_VALUES# WHERE #WHERE#";
+        //const string DeleteQuery = "DELETE FROM #TABLE# WHERE #IDCOLUMN# = #IDVALUE#";
+        const string DeleteQuery = "DELETE FROM #TABLE# #WHERE#";
+        const string GetQuery = "SELECT #COLUMNS# FROM #TABLE# #WHERE#";
+        //const string GetListQuery = 
+        #endregion
+
+        #region Insert
+        public void Insert(T entity)
+        {
+            using (conn)
+            {
+                GetIdentityColumn(entity.GetType().Name);
+
+                SqlCommand insertCommand = new SqlCommand();
+                string columns = "", parameters = "";
+                int paramCount = 0;
+
+                foreach (var _property in entity.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType == false))
+                {
+                    //Controlo que la propiedad no sea Identity, si es, no va en el Insert.
+                    var result = identityColumns.Select("name = '" + _property.Name + "'");
+
+                    if (result.Length == 0)
+                    {
+                        columns += _property.Name + ",";
+                        parameters += "@" + paramCount.ToString() + ",";
+
+                        // In the command, there are some parameters denoted by @, you can  change their value on a condition, in my code they're hardcoded.
+                        insertCommand.Parameters.Add(new SqlParameter(paramCount.ToString(), _property.GetValue(entity)));
+                        paramCount++;
+                    }
+                }
+
+                var query = InsertQuery;
+
+                query = query.Replace("#COLUMNS#", columns.Remove(columns.Length - 1));
+                query = query.Replace("#PARAMETERS#", parameters.Remove(parameters.Length - 1));
+                query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
+
+                conn.Open();
+                insertCommand.Connection = conn;
+                insertCommand.CommandText = query;
+                insertCommand.ExecuteNonQuery();
+                conn.Close();
+            }
+        }
+        public void Insert(List<T> entidades)
+        {
+            foreach (T entidad in entidades)
+            {
+                this.Insert(entidad);
+            }
+        }
+        #endregion
+
+        #region Update
+        public void Update(T entity)
+        {
+            using (conn)
+            {
+                GetIdentityColumn(entity.GetType().Name);
+
+                SqlCommand updateCommand = new SqlCommand();
+                string columnsValues = "", where = "";
+                int paramCount = 0;
+
+                foreach (var _property in entity.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType == false)) //.Where(x => x.PropertyType == typeof(string)))
+                {
+                    //Controlo que la propiedad no sea Identity, si es, no va en el Insert.
+                    var result = identityColumns.Select("name = '" + _property.Name + "'");
+
+                    if (result.Length == 0)
+                    {
+                        columnsValues += _property.Name + " = " + "@" + paramCount.ToString() + ",";
+
+                        // In the command, there are some parameters denoted by @, you can  change their value on a condition, in my code they're hardcoded.
+                        var value = _property.GetValue(entity);
+
+                        if (value == null)
+                        {
+                            updateCommand.Parameters.Add(new SqlParameter("@" + paramCount.ToString(), DBNull.Value));
+                        }
+                        else
+                        {
+                            updateCommand.Parameters.Add(new SqlParameter("@" + paramCount.ToString(), value));
+                        }
+                        
+                        paramCount++;
+                    }
+                }
+
+                //Armo el where del query.
+                foreach (DataRow row in identityColumns.Rows)
+                {
+                    PropertyInfo propertyInfo = entity.GetType().GetProperty(row["name"].ToString());
+                    //propertyInfo.SetValue(entity, Convert.ChangeType(row["name"], propertyInfo.PropertyType), null);
+
+                    where += row["name"].ToString() + " = " + propertyInfo.GetValue(entity, null) + " AND ";
+                }
+
+                var query = UpdateQuery;
+
+                query = query.Replace("#COLUMNS_VALUES#", columnsValues.Remove(columnsValues.Length - 1));
+                query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
+                query = query.Replace("#WHERE#", where.Remove(where.Length - 5));
+
+                conn.Open();
+                updateCommand.Connection = conn;
+                updateCommand.CommandText = query;
+                updateCommand.ExecuteNonQuery();
+                conn.Close();
+            }
+        }
+        public void Update(List<T> entidades)
+        {
+            foreach (T entidad in entidades)
+            {
+                this.Insert(entidad);
+            }
+        }
+        #endregion
+
+        #region Delete
+        public void Delete(SqlParameter[] parameters)
+        {
+            T entity = (T)Activator.CreateInstance(typeof(T));
+            SqlCommand deleteCommand = new SqlCommand();
+            string where = "";
+
+            if (parameters != null)
+            {
+                where = "WHERE ";
+
+                //Armo el where del query.
+                foreach (var parameter in parameters)
+                {
+                    where += parameter.ParameterName.Replace("@", "") + " = " + parameter.ParameterName + " AND ";
+                }
+
+                where = where.Remove(where.Length - 5);
+            }
+
+            var query = DeleteQuery;
+
+            query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
+            query = query.Replace("#WHERE#", where);
+
+            try
+            {
+                conn.Open();
+
+                deleteCommand.Connection = conn;
+                deleteCommand.CommandText = query;
+                deleteCommand.Parameters.AddRange(parameters);
+
+                deleteCommand.ExecuteNonQuery();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+        #endregion
+
+        #region Get
+        public void GetById()
+        {
+
+
+
+        }
+
+        public T GetByWhere(SqlParameter[] parameters)
+        {
+            T entity = (T)Activator.CreateInstance(typeof(T));
+            SqlCommand getCommand = new SqlCommand();
+            string columns = "", where = "";
+
+            //Armo el listado de columnas a traer.
+            foreach (var _property in entity.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType == false)) //.Where(x => x.PropertyType == typeof(string)))
+            {
+                columns += _property.Name + ",";
+            }
+
+            if (parameters != null)
+            {
+                where = "WHERE ";
+
+                //Armo el where del query.
+                foreach (var parameter in parameters)
+                {
+                    where += parameter.ParameterName.Replace("@", "") + " = " + parameter.ParameterName + " AND ";
+                }
+
+                where = where.Remove(where.Length - 5);
+            }
+            
+
+            var query = GetQuery;
+
+            query = query.Replace("#COLUMNS#", columns.Remove(columns.Length - 1));
+            query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
+            query = query.Replace("#WHERE#", where);
+
+            try
+            {
+                conn.Open();
+
+                getCommand.Connection = conn;
+                getCommand.CommandText = query;
+                getCommand.Parameters.AddRange(parameters);
+
+                SqlDataReader reader = getCommand.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    //Por cada reagistro del SqlDataReader, recorro las columnas.
+                    while (reader.Read())
+                    {
+                        for (int i = 0; i <= reader.FieldCount - 1; i++)
+                        {
+                            PropertyInfo propertyInfo = entity.GetType().GetProperty(reader.GetName(i));
+
+                            if (reader.IsDBNull(i))
+                            {
+                                propertyInfo.SetValue(entity, null, null);
+                            }
+                            else
+                            {
+                                propertyInfo.SetValue(entity, Convert.ChangeType(reader[i], propertyInfo.PropertyType), null);
+                            }
+                        }
+                    }
+                    return entity;
+                }
+                else
+                {
+                    return default(T);
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                conn.Close();
+            }
+            
+
+            
+
+        }
+
+        public DataSet ExecuteDataSet(string storePro, SqlParameter[] parameters)
+        {
+            SqlCommand command = new SqlCommand();
+            SqlDataAdapter dataAdapter = new SqlDataAdapter();
+            DataSet data = new DataSet();
+
+            try
+            {
+                command.Connection = conn;
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = storePro;
+                command.Parameters.AddRange(parameters);
+
+                dataAdapter.SelectCommand = command;
+
+                conn.Open();
+                dataAdapter.Fill(data);
+                conn.Close();
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        public List<object> GetList(SqlParameter[] parameters)
+        {
+            T entity = (T)Activator.CreateInstance(typeof(T));
+            List<T> entityList = (List<T>)Activator.CreateInstance(typeof(List<T>));
+            List<object> entityList_ = new List<object>();
+
+            SqlCommand command = new SqlCommand();
+            SqlDataAdapter dataAdapter = new SqlDataAdapter();
+            DataSet data = new DataSet();
+
+            string columns = "", where = "";
+
+            //Armo el listado de columnas a traer.
+            foreach (var _property in entity.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType == false))
+            {
+                columns += _property.Name + ",";
+            }
+
+            if (!(parameters is null))
+            {
+                where = "WHERE ";
+                //Armo el where del query.
+                foreach (var parameter in parameters)
+                {
+                    where += parameter.ParameterName.Replace("@", "") + " = " + parameter.ParameterName + " AND ";
+                }
+
+                where = where.Remove(where.Length - 5);
+
+                command.Parameters.AddRange(parameters);
+            }
+
+            var query = GetQuery;
+
+            query = query.Replace("#COLUMNS#", columns.Remove(columns.Length - 1));
+            query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
+            query = query.Replace("#WHERE#", where);
+
+            //Ejecuto el query y obtengo los datos.
+            command.Connection = conn;
+            command.CommandText = query;
+            dataAdapter.SelectCommand = command;
+
+            conn.Open();
+            dataAdapter.Fill(data);
+            conn.Close();
+
+            //Recorro cada fila y cargo la entidad correspondiente.
+            foreach (DataRow row in data.Tables[0].Rows)
+            {
+                //Creo una nueva entidad por cada fila.
+                entity = (T)Activator.CreateInstance(typeof(T));
+
+                foreach (DataColumn column in data.Tables[0].Columns)
+                { 
+                    PropertyInfo propertyInfo = entity.GetType().GetProperty(column.ToString());
+
+                    switch (propertyInfo.PropertyType.Name) {
+
+                        case "DateTime":
+
+                            DateTime result;
+
+                            if (row.IsNull(column))
+                            {
+                                result = default(DateTime);
+                            }
+                            else
+                            {
+                                DateTime.TryParse(row[column].ToString(), out result);
+                            }
+                            
+                            propertyInfo.SetValue(entity, result, null);
+
+                            break;
+                        default:
+                            propertyInfo.SetValue(entity, Convert.ChangeType(row[column], propertyInfo.PropertyType), null);
+                            break;
+
+                    }
+
+                    
+                }
+
+                entityList_.Add(entity);
+            }
+            
+
+            return entityList_;
+
+        }
+        #endregion
+
+        #region Get Identity Column
+        private void GetIdentityColumn(string tableName)
+        {
+            var oString = "SELECT name, is_identity FROM sys.columns WHERE[object_id] = object_id(@Table) and is_identity = 1";
+            var oCmd = new SqlCommand(oString, conn);
+            var table = new DataTable();
+
+            oCmd.Parameters.AddWithValue("@Table", tableName);
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(oCmd);
+            // this will query your database and return the result to your datatable
+            da.Fill(identityColumns);
+        }
+        #endregion
+
+        public static W ConvertValue<W>(string value)
+        {
+            return (W)Convert.ChangeType(value, typeof(T));
+        }
+
+        private string GetParameter(SqlParameter parameter)
+        {
+            switch (parameter.SqlDbType)
+            {
+                case SqlDbType.VarChar:
+                    return "'" + parameter.Value.ToString() + "'";
+
+                default:
+                    return parameter.Value.ToString();
+
+            }
+        }
+    }
+}
