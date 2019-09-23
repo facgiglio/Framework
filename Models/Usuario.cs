@@ -24,7 +24,7 @@ namespace Framework.Models
         [Insertable, Updatable]
         public string Apellido { get; set; }
 
-        [Insertable]
+        [Insertable, Updatable]
         public string Contrasena { get; set; }
 
         [Insertable, Updatable]

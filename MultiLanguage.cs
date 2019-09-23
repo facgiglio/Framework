@@ -81,7 +81,10 @@ namespace Framework
 
             return multiIdioma;
         }
-
+        public static string GetTranslate(string key)
+        {
+            return GetTranslate("Generico", key);
+        }
         public static string GetTranslate(string section, string key)
         {
             var translate = translates().Where(w => w.Seccion == section && w.Descripcion == key).FirstOrDefault();

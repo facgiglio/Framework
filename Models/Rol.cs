@@ -10,9 +10,11 @@ namespace Framework.Models
     {
         [PrimaryKey]
         public int IdRol { get; set; }
+
         [Insertable, Updatable]
         public string Descripcion { get; set; }
-        [EntityMany("PermisoRol", "Rol", "IdRol", "IdPermiso")]
+
+        [EntityMany("PermisoRol", "Permiso", "IdRol", "IdPermiso")]
         public List<Permiso> Permisos { get; set; }
     }
 }
