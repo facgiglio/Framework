@@ -55,14 +55,13 @@ namespace Framework
             return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount).TrimEnd("\0".ToCharArray());
         }
 
-        public static bool IsAuthorized(string page, string action)
+        public static bool IsAuthorized(Int32 idRol)
         {
             bool isAuthorized = false;
-            int IdPerm =  CheckPermissions(page, action);
 
             if (Session.SessionUser != null)
             {
-                //isAuthorized = (Session.SessionUser.Permisos.Find(c => c.Id == IdPerm) is null ? false : true);
+                isAuthorized = (Session.SessionUser.Roles.Find(rol => rol.IdRol == idRol) is null ? false : true);
             }
             else
             {
@@ -70,36 +69,6 @@ namespace Framework
             }
 
             return isAuthorized;
-        }
-
-        public static bool IsAuthorized(Int32 IdPerm)
-        {
-            bool isAuthorized = false;
-            //int IdPerm = CheckPermissions(page, action);
-
-            if (Session.SessionUser != null)
-            {
-                //isAuthorized = (Session.SessionUser.Permisos.Find(c => c.Id == IdPerm) is null ? false : true);
-            }
-            else
-            {
-                isAuthorized = false;
-            }
-
-            return isAuthorized;
-        }
-
-        public static Int32 CheckPermissions(string page, string action)
-        {
-            Int32 IdPerm = 0;
-            XElement root = XElement.Load(HttpContext.Current.Server.MapPath("~/Config/Security.xml"));
-
-            foreach (XElement el in root.Elements(page).Elements(action))
-            {
-                IdPerm = Convert.ToInt32(el.Attribute("id").Value);
-            }
-            
-            return IdPerm;
         }
     }
 }

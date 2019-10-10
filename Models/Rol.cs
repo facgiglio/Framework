@@ -13,8 +13,5 @@ namespace Framework.Models
 
         [Insertable, Updatable]
         public string Descripcion { get; set; }
-
-        [EntityMany("PermisoRol", "Permiso", "IdRol", "IdPermiso")]
-        public List<Permiso> Permisos { get; set; }
     }
 }
