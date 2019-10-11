@@ -55,7 +55,7 @@ namespace Framework
             return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount).TrimEnd("\0".ToCharArray());
         }
 
-        public static bool IsAuthorized(Int32 idRol)
+        public static bool IsAuthorized(int idRol)
         {
             bool isAuthorized = false;
 

@@ -699,8 +699,8 @@ C:\Facu\Framework\bin\roslyn\VBCSCompiler.exe
 C:\Facu\Framework\bin\roslyn\VBCSCompiler.exe.config
 C:\Facu\Framework\bin\Newtonsoft.Json.dll
 C:\Facu\Framework\bin\Newtonsoft.Json.xml
-C:\Facu\Framework\obj\Debug\Framework.csprojAssemblyReference.cache
 C:\Facu\Framework\obj\Debug\Framework.csproj.CoreCompileInputs.cache
 C:\Facu\Framework\obj\Debug\Framework.csproj.CopyComplete
 C:\Facu\Framework\obj\Debug\Framework.dll
 C:\Facu\Framework\obj\Debug\Framework.pdb
+C:\Facu\Framework\obj\Debug\Framework.csprojAssemblyReference.cache

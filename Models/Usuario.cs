@@ -10,6 +10,9 @@ namespace Framework.Models
         public int IdUsuario { get; set; }
 
         [Insertable, Updatable]
+        public int IdCliente { get; set; }
+
+        [Insertable, Updatable]
         public int IdIdioma { get; set; }
 
         [EntityMany("UsuarioRol", "Rol", "IdUsuario", "IdRol")]
