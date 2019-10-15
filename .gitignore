@@ -7,3 +7,9 @@
 *.dll
 *.pdb
 *.cache
+bin/Framework.dll
+*.dll
+*.pdb
+*.cache
+*.dll
+*.pdb
