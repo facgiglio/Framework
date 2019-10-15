@@ -60,7 +60,6 @@
     <Compile Include="Models\MessageDTO.cs" />
     <Compile Include="Models\MultiIdioma\MultiLenguaje.cs" />
     <Compile Include="Models\MultiIdioma\Traduccion.cs" />
-    <Compile Include="Models\Permiso.cs" />
     <Compile Include="Models\MultiIdioma\Idioma.cs" />
     <Compile Include="Models\MultiIdioma\Seccion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -145,18 +145,21 @@ namespace Framework.Helpers
                     paramCount++;
                 }
 
+                //Format the insert query to execute.
                 var query = InsertQuery;
-
                 query = query.Replace("#COLUMNS#", columns.Remove(columns.Length - 1));
                 query = query.Replace("#PARAMETERS#", parameters.Remove(parameters.Length - 1));
                 query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
                 query = query + " SELECT @@IDENTITY";
 
-                
-                insertCommand.Connection = Connection.GetSQLConnection();
-                insertCommand.CommandText = query;
-                Connection.GetSQLConnection().Open();
-                identity = Convert.ToInt32(insertCommand.ExecuteScalar());
+                using (var conn = Connection.GetSQLConnection())
+                {
+                    insertCommand.Connection = conn;
+                    insertCommand.CommandText = query;
+                    conn.Open();
+                    identity = Convert.ToInt32(insertCommand.ExecuteScalar());
+                    conn.Close();
+                }
 
                 //Guardo el id del objeto generado, para poder utilizarlo en las entidades relacionadas.
                 entity.GetType().GetProperty(propId.FirstOrDefault().Name).SetValue(entity, identity);

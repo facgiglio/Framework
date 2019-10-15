@@ -29,10 +29,9 @@ namespace Framework.Helpers
         {
             Models.Usuario sessionUser = (Models.Usuario)HttpContext.Current.Session["SessionUser"];
 
-            if (sessionUser == null)
+            if (sessionUser != null)
             {
                 HttpContext.Current.Session.Clear();
-                HttpContext.Current.Response.Redirect(getAbsolutePath("aspxs/start/logout.aspx"), true);
             }
         }
 
