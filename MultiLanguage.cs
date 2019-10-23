@@ -93,10 +93,10 @@ namespace Framework
             if (translate == null) return key;
 
             //Si no hay nadie logueado, devuelvo español.
-            if (Session.SessionUser is null) return translate.es; //TODO: poder cambiar el idioma si no está logueado. Crear un SessionUser sin log. 
+            if (Session.User is null) return translate.es; //TODO: poder cambiar el idioma si no está logueado. Crear un User sin log. 
 
             //Devuelvo la traducción correspondiente.
-            switch (Session.SessionUser.IdIdioma)
+            switch (Session.User.IdIdioma)
             {
                 case 1:
                     return translate.es;

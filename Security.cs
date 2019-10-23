@@ -59,9 +59,9 @@ namespace Framework
         {
             bool isAuthorized = false;
 
-            if (Session.SessionUser != null)
+            if (Session.User != null)
             {
-                isAuthorized = (Session.SessionUser.Roles.Find(rol => rol.IdRol == idRol) is null ? false : true);
+                isAuthorized = (Session.User.Roles.Find(rol => rol.IdRol == idRol) is null ? false : true);
             }
             else
             {

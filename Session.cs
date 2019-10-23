@@ -7,7 +7,7 @@ namespace Framework.Helpers
 {
     public class Session
     {
-        public static Models.Usuario SessionUser
+        public static Models.Usuario User
         {
             get
             {

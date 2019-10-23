@@ -18,19 +18,6 @@ namespace Framework.Helpers
         private static string connStringHomePc = @"Server=DESKTOP-HEFB77K;Database=ChatBotTFI;User Id=sa; Password=1024;";
         private static string masterConnStringHomePc = @"Server=DESKTOP-HEFB77K;Database=master;User Id=sa; Password=1024;";
 
-        /*
-        --|| Casa   ||-----------------------------------------------------------------------------------------------------------------------
-        Casa - Facu
-        private static string connStringHome = @"Server=FACAXNOTEBOOK\FACAXSQL;Database=Connline;User Id=userConn; Password=1024;";
-        private static string masterConnStringHome = @"Server=FACAXNOTEBOOK\FACAXSQL;Database=master;User Id=userConn; Password=1024;"; 
-        --|| Laburo ||-----------------------------------------------------------------------------------------------------------------------
-        private static string connStringWork = @"Server=GSNBK016;Database=Connline;User Id=userConn; Password=1024;";
-        private static string masterConnStringWork = @"Server=GSNBK016;Database=master;User Id=userConn; Password=1024;"; 
-
-        private static string connString = @"Server=GSNBK016;Database=Taller;User Id=userConn; Password=1024;";
-        private static string masterConnString = @"Server=GSNBK016;Database=master;User Id=userConn; Password=1024;"; 
-        */
-
         public static SqlConnection GetSQLConnection()
         {
             if (conn is null || conn.ConnectionString == "")

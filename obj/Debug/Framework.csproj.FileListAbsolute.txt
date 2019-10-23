@@ -580,10 +580,7 @@ D:\Projects\Framework\bin\roslyn\vbc.rsp
 D:\Projects\Framework\bin\roslyn\VBCSCompiler.exe
 D:\Projects\Framework\bin\roslyn\VBCSCompiler.exe.config
 D:\Projects\Framework\bin\Newtonsoft.Json.dll
-D:\Projects\Framework\bin\log4net.xml
 D:\Projects\Framework\bin\Newtonsoft.Json.xml
-D:\Projects\Framework\obj\Debug\Framework.csprojAssemblyReference.cache
-D:\Projects\Framework\obj\Debug\Framework.csproj.CoreCompileInputs.cache
 D:\Projects\Framework\obj\Debug\Framework.csproj.CopyComplete
 D:\Projects\Framework\obj\Debug\Framework.dll
 D:\Projects\Framework\obj\Debug\Framework.pdb
@@ -704,3 +701,4 @@ C:\Facu\Framework\obj\Debug\Framework.csproj.CopyComplete
 C:\Facu\Framework\obj\Debug\Framework.dll
 C:\Facu\Framework\obj\Debug\Framework.pdb
 C:\Facu\Framework\obj\Debug\Framework.csprojAssemblyReference.cache
+D:\Projects\Framework\obj\Debug\Framework.csprojAssemblyReference.cache

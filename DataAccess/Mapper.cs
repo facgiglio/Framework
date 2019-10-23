@@ -169,7 +169,7 @@ namespace Framework.Helpers
                 {
                     EntityMany attr = (EntityMany)_property.GetCustomAttribute(typeof(EntityMany));
                     System.Collections.IList list = (System.Collections.IList)_property.GetValue(entity, null);
-                    InsertRelationMany(list, entity, attr);
+                    InsertRelationMany(list, entity, attr, true);
                 }
 
                 return identity;
@@ -194,14 +194,47 @@ namespace Framework.Helpers
                 this.Insert(entidad);
             }
         }
+        #endregion
 
-        #region InsertRelationMany
-        public void InsertRelationMany(System.Collections.IList entityMany, T t, EntityMany attr)
+        #region Insert Relations
+        public void InsertRelation(T entity)
+        {
+            try
+            {
+                var propertys = entity.GetType().GetProperties().Where(x => x.PropertyType.IsGenericType == false && Attribute.IsDefined(x, typeof(Insertable)));
+
+                //Controlo que tenga las propiedades definidas.
+                if (propertys.Count() == 0)
+                {
+                    throw new Exception("La entidad " + entity.GetType().Name + " no tiene las propiedades \"Insertable\" definida");
+                }
+
+                //Inserto las entidades relacionadas.
+                foreach (var _property in entity.GetType().GetProperties().Where(x => Attribute.IsDefined(x, typeof(EntityMany))))
+                {
+                    EntityMany attr = (EntityMany)_property.GetCustomAttribute(typeof(EntityMany));
+                    System.Collections.IList list = (System.Collections.IList)_property.GetValue(entity, null);
+                    InsertRelationMany(list, entity, attr, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                if (Connection.GetSQLConnection().State == ConnectionState.Open)
+                {
+                    Connection.GetSQLConnection().Close();
+                }
+            }
+        }
+        public void InsertRelationMany(System.Collections.IList entityMany, T t, EntityMany attr, bool del)
         {
             try
             {
                 SqlCommand command = new SqlCommand();
-                var queryDel = "DELETE FROM #TABLE# WHERE #WHERE#";
+                var queryDel = (del ? "DELETE FROM #TABLE# WHERE #WHERE#" : ""); ;
                 var queryIns = "INSERT INTO #TABLE# (#COLUMNS#) VALUES #PARAMETERS#";
                 var queryParam = "";
 
@@ -224,9 +257,9 @@ namespace Framework.Helpers
                 if (entityMany.Count > 0)
                 {
                     queryIns = queryIns
-                .Replace("#TABLE#", attr.TableMany)
-                .Replace("#COLUMNS#", attr.Field1 + "," + attr.Field2)
-                .Replace("#PARAMETERS#", queryParam.Remove(queryParam.Length - 1));
+                        .Replace("#TABLE#", attr.TableMany)
+                        .Replace("#COLUMNS#", attr.Field1 + "," + attr.Field2)
+                        .Replace("#PARAMETERS#", queryParam.Remove(queryParam.Length - 1));
                 }
                 else
                 {
@@ -241,7 +274,7 @@ namespace Framework.Helpers
                     conn.Open();
                     command.ExecuteNonQuery();
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -255,8 +288,6 @@ namespace Framework.Helpers
                 }
             }
         }
-        #endregion
-
         #endregion
 
         #region Update
@@ -342,7 +373,7 @@ namespace Framework.Helpers
                 {
                     EntityMany attr = (EntityMany)_property.GetCustomAttribute(typeof(EntityMany));
                     System.Collections.IList list = (System.Collections.IList)_property.GetValue(entity, null);
-                    InsertRelationMany(list, entity, attr);
+                    InsertRelationMany(list, entity, attr, true);
                 }
             }
             catch (Exception ex)
@@ -684,9 +715,9 @@ namespace Framework.Helpers
         public List<Y> GetListEntityMany(int Id)
         {
             var query = GetManyQuery;
-            T parentEntity = (T)Activator.CreateInstance(typeof(T));
-            Y childEntity = (Y)Activator.CreateInstance(typeof(Y));
-            List<Y> entityList = (List<Y>)Activator.CreateInstance(typeof(List<Y>));
+            var parentEntity = (T)Activator.CreateInstance(typeof(T));
+            var childEntity = (Y)Activator.CreateInstance(typeof(Y));
+            
             var propId = parentEntity.GetType().GetProperties().Where(x => Attribute.IsDefined(x, typeof(PrimaryKey)));
             
 
@@ -717,52 +748,8 @@ namespace Framework.Helpers
 
                 SqlDataReader reader = _command.ExecuteReader();
 
-                if (reader.HasRows)
-                {
-                    //Por cada reagistro del SqlDataReader, recorro las columnas.
-                    while (reader.Read())
-                    {
-                        //New instance of the entity.
-                        childEntity = (Y)Activator.CreateInstance(typeof(Y));
-
-                        for (int i = 0; i <= reader.FieldCount - 1; i++)
-                        {
-                            PropertyInfo propertyInfo = childEntity.GetType().GetProperty(reader.GetName(i));
-
-                            switch (propertyInfo.PropertyType.Name)
-                            {
-                                case "DateTime":
-
-                                    DateTime result;
-
-                                    if (reader.IsDBNull(i))
-                                    {
-                                        result = default(DateTime);
-                                    }
-                                    else
-                                    {
-                                        DateTime.TryParse(reader[i].ToString(), out result);
-                                    }
-
-                                    propertyInfo.SetValue(childEntity, result, null);
-
-                                    break;
-                                default:
-                                    propertyInfo.SetValue(childEntity, Convert.ChangeType(reader[i], propertyInfo.PropertyType), null);
-                                    break;
-                            }
-                        }
-
-                        //Agrego la entidad a la lista.
-                        entityList.Add(childEntity);
-                    }
-                }
-                else
-                {
-                    return default(List<Y>);
-                }
-
-                return entityList;
+                return EntityManyList(reader);
+                
             }
             catch (Exception ex)
             {
@@ -773,6 +760,79 @@ namespace Framework.Helpers
                 Connection.GetSQLConnection().Close();
             }
         }
+
+        public List<object> GetListObjectMany(int Id)
+        {
+            //The list of entities
+            var entityList = GetListEntityMany(Id);
+
+            if (entityList != null)
+            {
+                //Return the entitylist in objecto to the grid.
+                return entityList.Cast<object>().ToList();
+            }
+            else
+            {
+                //Para evitar errores, devuelvo
+                return new List<object>();
+            }
+            
+        }
+
+
+        #region Entity Many Mappers
+        protected List<Y> EntityManyList(SqlDataReader reader)
+        {
+            var entityList = (List<Y>)Activator.CreateInstance(typeof(List<Y>));
+
+            if (reader.HasRows)
+            {
+                //Por cada reagistro del SqlDataReader, recorro las columnas.
+                while (reader.Read())
+                {
+                    //New instance of the entity.
+                    var childEntity = (Y)Activator.CreateInstance(typeof(Y));
+
+                    for (int i = 0; i <= reader.FieldCount - 1; i++)
+                    {
+                        PropertyInfo propertyInfo = childEntity.GetType().GetProperty(reader.GetName(i));
+
+                        switch (propertyInfo.PropertyType.Name)
+                        {
+                            case "DateTime":
+
+                                DateTime result;
+
+                                if (reader.IsDBNull(i))
+                                {
+                                    result = default(DateTime);
+                                }
+                                else
+                                {
+                                    DateTime.TryParse(reader[i].ToString(), out result);
+                                }
+
+                                propertyInfo.SetValue(childEntity, result, null);
+
+                                break;
+                            default:
+                                propertyInfo.SetValue(childEntity, Convert.ChangeType(reader[i], propertyInfo.PropertyType), null);
+                                break;
+                        }
+                    }
+
+                    //Agrego la entidad a la lista.
+                    entityList.Add(childEntity);
+                }
+            }
+            else
+            {
+                return default(List<Y>);
+            }
+
+            return entityList;
+        }
+        #endregion
     }
 
     public class SqlHelper
