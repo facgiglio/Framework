@@ -636,7 +636,6 @@ C:\Projects\Framework\bin\roslyn\vbc.rsp
 C:\Projects\Framework\bin\roslyn\VBCSCompiler.exe
 C:\Projects\Framework\bin\roslyn\VBCSCompiler.exe.config
 C:\Projects\Framework\bin\Newtonsoft.Json.dll
-C:\Projects\Framework\bin\log4net.xml
 C:\Projects\Framework\bin\Newtonsoft.Json.xml
 C:\Projects\Framework\obj\Debug\Framework.csprojResolveAssemblyReference.cache
 C:\Projects\Framework\obj\Debug\Framework.csproj.CoreCompileInputs.cache

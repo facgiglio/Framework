@@ -197,7 +197,7 @@ namespace Framework.Helpers
         #endregion
 
         #region Insert Relations
-        public void InsertRelation(T entity)
+        public void InsertRelation(T entity, string property)
         {
             try
             {
@@ -213,8 +213,12 @@ namespace Framework.Helpers
                 foreach (var _property in entity.GetType().GetProperties().Where(x => Attribute.IsDefined(x, typeof(EntityMany))))
                 {
                     EntityMany attr = (EntityMany)_property.GetCustomAttribute(typeof(EntityMany));
-                    System.Collections.IList list = (System.Collections.IList)_property.GetValue(entity, null);
-                    InsertRelationMany(list, entity, attr, false);
+
+                    if (attr.TableRela == property)
+                    {
+                        System.Collections.IList list = (System.Collections.IList)_property.GetValue(entity, null);
+                        InsertRelationMany(list, entity, attr, false);
+                    }
                 }
             }
             catch (Exception ex)

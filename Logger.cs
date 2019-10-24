@@ -7,14 +7,18 @@ namespace Framework
     {
         private static readonly ILog Log = LogManager.GetLogger(System.Environment.MachineName);
 
-        public static void LogInfo()
+        public static void LogInfo(string message)
         {
-            var st = new StackTrace();
-            var sf = st.GetFrame(0);
+            LogicalThreadContext.Properties["IdUser"] = Helpers.Session.User.IdUsuario;
 
-            var currentMethodName = sf.GetMethod();
+            Log.Info(message);
+        }
 
-            Log.Info(currentMethodName);
+        public static void LogException(string message)
+        {
+            LogicalThreadContext.Properties["IdUser"] = Helpers.Session.User.IdUsuario;
+
+            Log.Error(message);
         }
     }
 }

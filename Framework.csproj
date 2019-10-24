@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes.cs" />
+    <Compile Include="Models\Log.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Rules\Bitacora.cs" />
     <Compile Include="Rules\MultiLanguage.cs" />
