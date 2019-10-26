@@ -2,6 +2,8 @@
 using System.Web.UI;
 using System.Text;
 using Newtonsoft.Json;
+using System;
+using System.Globalization;
 
 [assembly: TagPrefix("Samples.AspNet", "Sample")]
 namespace Framework.WebControls
@@ -21,7 +23,7 @@ namespace Framework.WebControls
     #region Column Type Enum
     public enum ColumnType
     {
-        Data, CheckBox, TextBox
+        Data, CheckBox, TextBox, Datetime
     }
     #endregion
 
@@ -154,7 +156,7 @@ namespace Framework.WebControls
         {
             
             var contextMenu = "<ul class=\"dropdown-menu\" id=\"" + this.ID + "CM\" aria-type=\"context-menu\">{item}</ul>";
-            var item = "<li data-toggle=\"modal\" data-target=\"#{modal}\" data-mode=\"{modo}\"><a href=\"#\"><span class=\"{icon}\" style=\"color: {color}; width: 25px\"></span><span runat=\"server\" id=\"{idMenu}\"></span>{descripcion}</a></li>";
+            var item = "<li id=\"{idMenu}\" data-toggle=\"modal\" data-target=\"#{modal}\" data-mode=\"{modo}\"><a href=\"#\"><span class=\"{icon}\" style=\"color: {color}; width: 25px\"></span><span runat=\"server\"></span>{descripcion}</a></li>";
             /*
             var item = "<li class=\"dropdown-item\" data-mode=><i class=" ></i><span runat=\"server\" id=></span></a>";
             */
@@ -221,7 +223,7 @@ namespace Framework.WebControls
                         string data = row.GetType().GetProperty(column.Expression).GetValue(row, null).ToString();
 
                         jsonProp.Replace("{prop}", column.Expression);
-                        json += (json != "" ? "," : "").ToString() + jsonProp.Replace("{prop}", column.Expression).Replace("{val}", data);
+                        json += (json != "" ? "," : "").ToString() + jsonProp.Replace("{prop}", column.Expression).Replace("{val}", data.Replace(@"\", @"\\"));
                     }
                 }
 
@@ -241,6 +243,13 @@ namespace Framework.WebControls
 
                         switch (column.Type)
                         {
+                            case ColumnType.Datetime:
+                                contenido = row.GetType().GetProperty(column.Expression).GetValue(row, null).ToString();
+                                contenido = Convert.ToDateTime(contenido).ToString(new CultureInfo("es-AR")).ToString();
+
+                                writer.Append("<td style =\"text-align:left\">" + contenido + "</td>");
+                                break;
+                                
                             case ColumnType.Data:
                                 contenido = row.GetType().GetProperty(column.Expression).GetValue(row, null).ToString();
                                 writer.Append("<td style =\"text-align:left\">" + contenido + "</td>");

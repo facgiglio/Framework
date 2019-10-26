@@ -163,7 +163,10 @@ namespace Framework.Helpers
 
                 //Guardo el id del objeto generado, para poder utilizarlo en las entidades relacionadas.
                 entity.GetType().GetProperty(propId.FirstOrDefault().Name).SetValue(entity, identity);
-               
+
+                var logMessage = "Insertar {0} - Id: {1}";
+
+
                 //Inserto las entidades relacionadas.
                 foreach (var _property in entity.GetType().GetProperties().Where(x => Attribute.IsDefined(x, typeof(EntityMany))))
                 {
@@ -849,6 +852,34 @@ namespace Framework.Helpers
             try
             {
                 using (var conn = Connection.GetSQLConnection())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = storeProcedure;
+                    command.Parameters.AddRange(parameters);
+
+                    conn.Open();
+                    command.ExecuteNonQuery();
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                Connection.GetSQLConnection().Close();
+            }
+        }
+
+        public static void ExecuteQueryMaster(string storeProcedure, SqlParameter[] parameters)
+        {
+            var command = new SqlCommand();
+
+            try
+            {
+                using (var conn = Connection.GetMasterSQLConnection())
                 {
                     command.Connection = conn;
                     command.CommandType = CommandType.StoredProcedure;
