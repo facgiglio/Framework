@@ -21,14 +21,14 @@ namespace Framework.Helpers
         public static SqlConnection GetSQLConnection()
         {
             if (conn is null || conn.ConnectionString == "")
-            {
+            {   
                 switch (Environment.MachineName)
                 {
                     case "GSNBK016":
                         conn = new SqlConnection(connStringWork);
                         break;
                     case "FACAXNOTEBOOK":
-                        conn = new SqlConnection(connStringHome);
+                        conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString);
                         break;
                     case "DESKTOP-HEFB77K":
                         conn = new SqlConnection(connStringHomePc);
@@ -36,6 +36,7 @@ namespace Framework.Helpers
 
                 }                
             }
+
             return conn;
         }
 

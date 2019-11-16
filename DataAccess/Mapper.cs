@@ -543,7 +543,7 @@ namespace Framework.Helpers
             var where = GetWhere(parameters);
             var query = GetQuery;
 
-            query = query.Replace("#COLUMNS#", columns.Remove(columns.Length - 1));
+            query = query.Replace("#COLUMNS#", columns);
             query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
             query = query.Replace("#WHERE#", where);
 
@@ -563,6 +563,7 @@ namespace Framework.Helpers
         {
             var dataAdapter = new SqlDataAdapter();
             var data = new DataSet();
+            _command = new SqlCommand();
 
             try
             {

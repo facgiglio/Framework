@@ -57,7 +57,7 @@ namespace Framework
             _Log.Info(message);
         }
 
-        private static void LogException(string message)
+        public static void LogException(string message)
         {
             _Log.Error(message);
         }

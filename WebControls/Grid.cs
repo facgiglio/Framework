@@ -58,6 +58,7 @@ namespace Framework.WebControls
         public string IdMenu { get; set; }
         public string Modal { get; set; }
         public string Descripcion { get; set; }
+        public string OnClick { get; set; }
     }
 
     public class Grid : System.Web.UI.WebControls.WebControl
@@ -86,7 +87,24 @@ namespace Framework.WebControls
                 Modo = modo,
                 Icon = icon,
                 Color = color,
-                Modal = modal
+                Modal = modal,
+                OnClick = ""
+            };
+
+            Config.ContextMenus.Add(contextMenu);
+        }
+
+        public void AddContextMenuClick(string idMenu, string descripcion, string modo, string icon, string color, string onClick)
+        {
+            GridContextMenu contextMenu = new GridContextMenu
+            {
+                IdMenu = idMenu,
+                Descripcion = descripcion,
+                Modo = modo,
+                Icon = icon,
+                Color = color,
+                Modal = "",
+                OnClick = onClick
             };
 
             Config.ContextMenus.Add(contextMenu);
@@ -154,26 +172,13 @@ namespace Framework.WebControls
 
         public string RenderContextMenu()
         {
-            
             var contextMenu = "<ul class=\"dropdown-menu\" id=\"" + this.ID + "CM\" aria-type=\"context-menu\">{item}</ul>";
-            var item = "<li id=\"{idMenu}\" data-toggle=\"modal\" data-target=\"#{modal}\" data-mode=\"{modo}\"><a href=\"#\"><span class=\"{icon}\" style=\"color: {color}; width: 25px\"></span><span runat=\"server\"></span>{descripcion}</a></li>";
-            /*
-            var item = "<li class=\"dropdown-item\" data-mode=><i class=" ></i><span runat=\"server\" id=></span></a>";
-            */
-            /*
-            <ul class="dropdown-menu" id="grdUsuarioCM" aria-type="context-menu">
-                <li data-toggle="modal" data-target="#exampleModal" data-mode="@Upd"><a href="#"><span class="glyphicon glyphicon-pencil" style="color: #337AB7; width: 25px"></span><span runat="server" id="cmnuModificar"></span></a></li>
-                <li data-toggle="modal" data-target="#exampleModal" data-mode="@Del"><a href="#"><span class="glyphicon glyphicon-pencil" style="color: #d9534f; width: 25px"></span><span runat="server" id="cmnuEliminar"></span></a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="#">Separated link</a></li>
-            </ul>
-            */
+            var item = "<li id=\"{0}\" data-toggle=\"modal\" data-target=\"#{1}\" data-mode=\"{2}\" onclick=\"{6}\"><a href=\"#\"><span class=\"{3}\" style=\"color: {4}; width: 25px\"></span><span runat=\"server\"></span>{5}</a></li>";
 
             foreach (var menu in Config.ContextMenus)
             {
-                contextMenu = contextMenu.Replace("{item}", item.Replace("{modo}", menu.Modo).Replace("{icon}", menu.Icon).Replace("{color}", menu.Color).Replace("{idMenu}", menu.IdMenu).Replace("{descripcion}", menu.Descripcion).Replace("{modal}", menu.Modal) + "{item}");
+                contextMenu = contextMenu.Replace("{item}", string.Format(item, menu.IdMenu, menu.Modal, menu.Modo, menu.Icon, menu.Color, menu.Descripcion, menu.OnClick) + "{item}");
             }
-
             
             return contextMenu.Replace("{item}", "");
         }
