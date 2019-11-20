@@ -23,7 +23,7 @@ namespace Framework
 
         public static void Log(LogAction action, string className, int idEntity, LogType type, string exMessage)
         {
-            LogicalThreadContext.Properties["IdUser"] = Helpers.Session.User.IdUsuario;
+            LogicalThreadContext.Properties["IdUser"] = Session.User.IdUsuario;
             var logMessage = "{0} {1} - Id: {2}";
 
             switch (action)

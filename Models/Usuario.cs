@@ -18,7 +18,7 @@ namespace Framework.Models
         [EntityMany("UsuarioRol", "Rol", "IdUsuario", "IdRol")]
         public List<Models.Rol> Roles { get; set; }
 
-        [Insertable, Updatable]
+        [Insertable]
         public string Email { get; set; }
 
         [Insertable, Updatable]
@@ -35,6 +35,8 @@ namespace Framework.Models
 
         [Insertable]
         public DateTime FechaAlta { get; set; }
+        [Insertable, Updatable]
+        public string CodigoRecuperacion { get; set; }
 
     }
 }

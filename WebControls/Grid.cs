@@ -225,7 +225,7 @@ namespace Framework.WebControls
                 {
                     if (column.IsAccesible)
                     {
-                        string data = row.GetType().GetProperty(column.Expression).GetValue(row, null).ToString();
+                        string data = row.GetType().GetProperty(column.Expression).GetValue(row, null).ToString().Replace("\n","");
 
                         jsonProp.Replace("{prop}", column.Expression);
                         json += (json != "" ? "," : "").ToString() + jsonProp.Replace("{prop}", column.Expression).Replace("{val}", data.Replace(@"\", @"\\"));

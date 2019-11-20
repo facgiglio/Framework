@@ -11,30 +11,19 @@ namespace Framework.Helpers
         private static SqlConnection conn;
         private static SqlConnection connMaster;
 
+        /*
         private static string connStringHome = @"Server=FACAXNOTEBOOK\FACAXSQL;Database=ChatBotTFI;User Id=sa; Password=1024;";
         private static string masterConnStringHome = @"Server=FACAXNOTEBOOK\FACAXSQL;Database=master;User Id=sa; Password=1024;";
         private static string connStringWork = @"Server=GSNBK016;Database=ChatbotTFI;User Id=userConn; Password=1024;";
         private static string masterConnStringWork = @"Server=GSNBK016;Database=master;User Id=sa; Password=1024;";
         private static string connStringHomePc = @"Server=DESKTOP-HEFB77K;Database=ChatBotTFI;User Id=sa; Password=1024;";
         private static string masterConnStringHomePc = @"Server=DESKTOP-HEFB77K;Database=master;User Id=sa; Password=1024;";
-
+        */
         public static SqlConnection GetSQLConnection()
         {
             if (conn is null || conn.ConnectionString == "")
             {   
-                switch (Environment.MachineName)
-                {
-                    case "GSNBK016":
-                        conn = new SqlConnection(connStringWork);
-                        break;
-                    case "FACAXNOTEBOOK":
-                        conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString);
-                        break;
-                    case "DESKTOP-HEFB77K":
-                        conn = new SqlConnection(connStringHomePc);
-                        break;
-
-                }                
+                conn = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString);
             }
 
             return conn;
@@ -44,18 +33,7 @@ namespace Framework.Helpers
         {
             if (connMaster is null || connMaster.ConnectionString == "")
             {
-                switch (Environment.MachineName)
-                {
-                    case "GSNBK016":
-                        connMaster = new SqlConnection(masterConnStringWork);
-                        break;
-                    case "FACAXNOTEBOOK":
-                        connMaster = new SqlConnection(masterConnStringHome);
-                        break;
-                    case "DESKTOP-HEFB77K":
-                        connMaster = new SqlConnection(masterConnStringHomePc);
-                        break;
-                }
+                connMaster = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionStringMaster"].ConnectionString);
             }
             return connMaster;
         }

@@ -64,7 +64,18 @@ namespace Framework.Helpers
                     {
                         case SqlDbType.NVarChar:
                         case SqlDbType.VarChar:
-                            where += parameter.ParameterName.Replace("@", "") + " like '%' + ISNULL(" + parameter.ParameterName + ", '') + '%' AND ";
+                            if (parameter.ParameterName.Substring(parameter.ParameterName.Length - 1, 1) == "*")
+                            {
+                                //Elimino el asterisco del parámetro.
+                                parameter.ParameterName = parameter.ParameterName.Replace("*", "");
+                                where += parameter.ParameterName.Replace("@", "") + " = ISNULL(" + parameter.ParameterName + ", '') AND ";
+                            }
+                            else
+                            {
+                                where += parameter.ParameterName.Replace("@", "") + " like '%' + ISNULL(" + parameter.ParameterName + ", '') + '%' AND ";
+                            }
+
+                            
 
                             if (parameter.Value.ToString() == "")
                                 parameter.Value = DBNull.Value;
@@ -420,6 +431,7 @@ namespace Framework.Helpers
             try
             {
                 var query = DeleteQuery;
+                _command = new SqlCommand();
 
                 query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
                 query = query.Replace("#WHERE#", GetWhere(parameters));
@@ -473,7 +485,9 @@ namespace Framework.Helpers
                     _command.Connection = conn;
                     _command.CommandText = query;
                     _command.CommandType = CommandType.Text;
-                    conn.Open();
+
+                    if (conn.State == ConnectionState.Closed)
+                        conn.Open();
 
                     var reader = _command.ExecuteReader();
                     
@@ -487,10 +501,7 @@ namespace Framework.Helpers
             }
             finally
             {
-                if (Connection.GetSQLConnection().State == ConnectionState.Open)
-                {
-                    Connection.GetSQLConnection().Close();
-                }
+                Connection.GetSQLConnection().Close();
             }
         }
         public List<object> GetList(SqlParameter[] parameters)
@@ -500,6 +511,7 @@ namespace Framework.Helpers
                 var dataAdapter = new SqlDataAdapter();
                 var data = new DataSet();
                 var query = GetQuery;
+                _command = new SqlCommand();
 
                 query = query.Replace("#COLUMNS#", GetColumns(entity));
                 query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
@@ -533,15 +545,15 @@ namespace Framework.Helpers
         }
         public List<T> GetListEntity(SqlParameter[] parameters)
         {
-            T entity = (T)Activator.CreateInstance(typeof(T));
-            List<T> entityList = (List<T>)Activator.CreateInstance(typeof(List<T>));
-            
-            SqlDataAdapter dataAdapter = new SqlDataAdapter();
-            DataSet data = new DataSet();
+            var entity = (T)Activator.CreateInstance(typeof(T));
+            var entityList = (List<T>)Activator.CreateInstance(typeof(List<T>));
+            var dataAdapter = new SqlDataAdapter();
+            var data = new DataSet();
 
             var columns = GetColumns(entity);
             var where = GetWhere(parameters);
             var query = GetQuery;
+            _command = new SqlCommand();
 
             query = query.Replace("#COLUMNS#", columns);
             query = query.Replace("#TABLE#", entity.GetType().Name.ToString());
@@ -749,6 +761,7 @@ namespace Framework.Helpers
             try
             {
                 Connection.GetSQLConnection().Open();
+                _command = new SqlCommand();
 
                 _command.Connection = Connection.GetSQLConnection();
                 _command.CommandText = query;
