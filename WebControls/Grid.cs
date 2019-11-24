@@ -49,6 +49,8 @@ namespace Framework.WebControls
         public string ExpressionId { get; set; }
         public bool IsAccesible { get; set; }
         public bool IsVisible { get; set; }
+        public string Class { get; set; }
+
     }
     public class GridContextMenu
     {
@@ -115,6 +117,10 @@ namespace Framework.WebControls
         #region AddColumn
         public void AddColumn(string title, ColumnType type, string expression, string expressionId, bool isAccesible, bool isVisible)
         {
+            AddColumn(title, type, expression, expressionId, isAccesible, isVisible, "");
+        }
+        public void AddColumn(string title, ColumnType type, string expression, string expressionId, bool isAccesible, bool isVisible, string styleClass)
+        {
             GridColumn column = new GridColumn
             {
                 Title = title,
@@ -122,7 +128,8 @@ namespace Framework.WebControls
                 Expression = expression,
                 ExpressionId = expressionId,
                 IsAccesible = isAccesible,
-                IsVisible = isVisible
+                IsVisible = isVisible,
+                Class = styleClass
             };
 
             Config.Columns.Add(column);
@@ -203,8 +210,7 @@ namespace Framework.WebControls
             foreach (GridColumn column in Config.Columns)
             {
                 if (column.IsVisible)
-                    writer.Append("<th>" + column.Title + "</th>");
-                //writer.Append("  <div class=\"column " + column.Width + "\" style=\"text-align:center\">" + column.Title + "</div>");
+                    writer.Append("<th " + (column.Class == ""?"" : "class='" + column.Class + "'") + ">" + column.Title + "</th>");
             }
             //4 - FIN - Encabezado de la grilla.
 

@@ -678,17 +678,20 @@ namespace Framework.Helpers
                         case "Boolean":
                             var resultBoolean = false;
 
-                            if (row.IsNull(column))
-                            {
-                                resultBoolean = false;
-                            }
-                            else
-                            {
+                            if (!row.IsNull(column))
                                 Boolean.TryParse(row[column].ToString(), out resultBoolean);
-                            }
+                            
 
                             property.SetValue(entity, resultBoolean, null);
 
+                            break;
+                        case "Int32":
+                            var resultInt = 0;
+
+                            if (!row.IsNull(column))
+                                int.TryParse(row[column].ToString(), out resultInt);
+
+                            property.SetValue(entity, resultInt, null);
                             break;
                         default:
                             property.SetValue(entity, Convert.ChangeType(row[column], property.PropertyType), null);
